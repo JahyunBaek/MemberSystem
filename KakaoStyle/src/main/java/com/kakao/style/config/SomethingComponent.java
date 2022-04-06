@@ -17,7 +17,7 @@ public class SomethingComponent {
     @Bean
     public ApplicationRunner applicationRunner() {
         return args -> {
-            for(int i = 0; i < 10; i++) {
+            for(int i = 0; i < 11; i++) {
             	  BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
                   String pwd = passwordEncoder.encode("pwd"+i);
                 Member member = new Member(i, "name"+i, "account"+i, pwd);
