@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<script type="text/javascript" src="/lib/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" src="/js/common.js"></script>
+    <head>
+        <meta charset="UTF-8">
+        <title>서류결제</title>
+    </head>
+    <style>
+    table, td, th {
+  border : 1px solid black;
+  border-collapse : collapse;
+};
+    </style>
+    <body>
+        <h1>신규작성</h1>
+        <hr>
+        <span sec:authentication="name"></span> 님 반갑습니다.<br>
+        <a th:href="@{/member/approval}">뒤로 가기</a><br>
+       <!--  <div sec:authentication="principal.authorities"></div> -->
+       <div>
+       <h4>결제</h4>
+		<select id="selectBox" name="selectBox" multiple>
+		
+		</select>
+		<select id="selectBoxTEMP" name="selectBoxTEMP" multiple>
+		
+		</select>
+		<button id="up">up</button>
+		<button id="down">down</button>
+	<!-- 	<button onclick="setData()">test</button> -->
+		<li>위부터 우선 결제</li><br>
+        </div>
+      	<form id="formAction" th:action="@{/create}" method="post">
+				<div class="mb-3">
+				    <label class="form-label font-weight-bold"><span class="text-danger">* </span>Title.</label><br>
+				    <input type="text" class="form-control" name="title" required >
+				</div>
+				<div class="mb-3">
+				    <label class="form-label font-weight-bold"><span class="text-danger">* </span>분류.</label><br>
+				    <select id="kind" name="kind">
+				    <option value="정보" selected>정보</option>
+				    <option value="출장">출장</option>
+				    <option value="휴가">휴가</option>
+				    <option value="정산">정산</option>
+				    </select>
+				</div>
+				<div class="mb-3">
+			    	<label class="form-label font-weight-bold"><span class="text-danger">* </span>Content.</label><br>
+			    	<textarea class="form-control" rows="5" name="contents" required ></textarea>
+				</div>
+				<div class="mb-3">
+				   <!--  <label class="form-label font-weight-bold"><span class="text-danger">* </span>Writer.</label><br> -->
+				    <input id="writer" hidden type="text" class="form-control" name="writer" required th:value="${#authentication.name}">
+				</div>
+				<div class="mt-5">
+					<button type="button" class="btn btn-primary" onclick="fnSubmit();">작성</button>
+				</div>
+		</form>
+    </body>
+    <script>
+    	AjaxSync("/api/memlist",callback,null,$("#writer").val());
+		function callback(result){
+			for(let i=0;i<result.length;i++){
+				$('#selectBox').append("<option value='"+result[i].account+"'>"+result[i].name+"</option>");
+			}
+		}
+		$("#selectBox").on("dblclick", "option", function(){ 
+			let idx = $("#selectBox option").index( $("#selectBox option:selected") );
+			  //console.log(idx)
+			let val = $('#selectBox option:selected').val();
+			let txt = $('#selectBox option:selected').text();
+			$('#selectBox option:eq('+idx+')').remove();
+			$('#selectBoxTEMP').append("<option value='"+val+"'>"+ txt +"</option>");
+		});
+		$("#selectBoxTEMP").on("dblclick", "option", function(){ 
+			let idx = $("#selectBoxTEMP option").index( $("#selectBoxTEMP option:selected") );
+			  //console.log(idx)
+			let val = $('#selectBoxTEMP option:selected').val();
+			let txt = $('#selectBoxTEMP option:selected').text();
+			$('#selectBoxTEMP option:eq('+idx+')').remove();
+			$('#selectBox').append("<option value='"+val+"'>"+ txt +"</option>");
+		});
+		
+		$("#up").click(function() {
+		    var opt = $("#selectBoxTEMP option:selected");
+		    if(opt.length > 0) {
+		        opt.insertBefore(opt.prev());
+		    }
+		});
+		$("#down").click(function() {
+		    var opt = $("#selectBoxTEMP option:selected");
+		    if(opt.length > 0) {
+		        opt.insertAfter(opt.next());
+		    }
+		});
+		function setData(){
+			console.log($("#selectBoxTEMP option").length);
+			let size = $("#selectBoxTEMP option").length;
+			if(size == 0) return false;
+			for(let i=0;i<size;i++){
+				let id = $("#selectBoxTEMP option:eq("+i+")").val();
+				$("#formAction").append($('<input/>', {type: 'hidden', name: 'acclist['+i+']', value: id }));
+
+			}
+			 //<input type="text" name="examlist[0].title" value="1번">
+		}
+		function fnSubmit(){
+			let result = setData();
+			if(result ==false){
+				alert("최소 1명의 결제자가 필요합니다.");
+				return;
+			}
+			$("#formAction").submit();
+			
+		}
+		function callbackEnd(result){
+			console.log("end");
+		}
+    </script>
+</html>

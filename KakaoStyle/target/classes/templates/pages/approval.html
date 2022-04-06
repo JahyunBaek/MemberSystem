@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<script type="text/javascript" src="/lib/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" src="/js/common.js"></script>
+    <head>
+        <meta charset="UTF-8">
+        <title>서류결제</title>
+    </head>
+    <style>
+    table, td, th {
+  border : 1px solid black;
+  border-collapse : collapse;
+};
+    </style>
+    <body>
+        <h1>서류결제 시스템</h1>
+        <hr>
+        <span sec:authentication="name"></span> 님 반갑습니다.
+       <!--  <div sec:authentication="principal.authorities"></div> -->
+
+        <a th:href="@{/}">홈으로 가기</a>
+        <div>
+        <button onclick="search(0);">OUTBOX</button>
+        <button onclick="search(1);">INBOX</button>
+        <button onclick="search(2);">ARCHIVE</button>
+        <button type="button" onclick="location.href='/member/newdoc' ">Create</button>
+        <input id="Acc" hidden type="text" class="form-control" name="writer" required th:value="${#authentication.name}">
+        </div>
+        <div>
+
+		<table style="border: 1px black; border-collapse : collapse;" id="dynamicTable">
+		<thead>
+		<tr>
+		<th style="display : none">SN</th>
+		<th>제목</th>
+		<th>분류</th>
+		<th style="display : none">내용</th>
+		<th style="display : none">작성자</th>
+		<th>상태</th>
+		<th style="display : none">현재결제자</th>
+		<th style="display : none">총결제인원</th>
+		</tr>
+		</thead>
+		<tbody id="dynamicTbody">
+			
+		</tbody>
+		</table>
+        </div>
+    </body>
+    <script>
+    search(0);
+    function search(idx){
+    	if(idx==0){
+    		AjaxSync('/api/outbox',callback,null,$("#Acc").val());
+    	}else if(idx==1){
+    		AjaxSync('/api/inbox',callback,null,$("#Acc").val());
+    	}else{//2
+    		AjaxSync('/api/archive',callback,null,$("#Acc").val());
+    		
+    	}
+    	
+    }
+	function callback(result){
+		$("#dynamicTbody").empty();
+		let tc = new Array();
+		
+		console.log(result.length);
+		for(let i=0;i<result.length;i++){
+			let html = '';
+			html += '<tr>';
+    		html += '<td style="display : none"> '+result[i].sn+'</td>';
+    		html += '<td>'+result[i].title+'</td>';
+    		html += '<td>'+result[i].kind+'</td>';
+    		html += '<td  style="display : none">'+result[i].contents+'</td>';
+    		html += '<td  style="display : none">'+result[i].writer+'</td>';
+    		let status;
+    		if(result[i].status == "0") status="결제진행중";
+    		else if(result[i].status == "1") status="결제완료";
+    		else status="결제반려";
+    		html += '<td>'+status+'</td>';
+    		html += '<td  style="display : none">'+result[i].position+'</td>';
+    		html += '<td  style="display : none">'+result[i].count+'</td>';
+    		html += '</tr>';
+
+    		$("#dynamicTable").append(html);	
+		}
+	};
+	$("table").on("click", "tr", function(){ 
+		let tr = $(this); 
+		console.log(tr); 
+		let td = tr.children(); // tr.text()는 클릭된 Row 즉 tr에 있는 모든 값을 가져온다. 
+		/* 
+		console.log(td.eq(0).text()); 
+		console.log(td.eq(1).text());
+		let JsonData = new Object();
+		
+		JsonData.sn = td.eq(0).text();
+		JsonData.title = td.eq(1).text();
+		JsonData.kind = td.eq(2).text();
+		JsonData.contents = td.eq(3).text();
+		JsonData.writer = td.eq(4).text();
+		JsonData.status = td.eq(5).text();
+		JsonData.position = td.eq(6).text();
+		JsonData.count = td.eq(7).text();
+		//var jsonD = JSON.stringify(JsonData);
+		let test= {sn : td.eq(0).text()} */
+		location.href="/member/docview/"+td.eq(0).text();
+		//AjaxSync('/member/docview',null,null,td.eq(0).text());
+	});
+
+
+
+	
+    </script>
+</html>

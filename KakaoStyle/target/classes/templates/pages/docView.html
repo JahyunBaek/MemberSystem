@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_header" th:content="${_csrf.headerName}">
+<script type="text/javascript" src="/lib/jquery-3.6.0.min.js"></script>
+  <script type="text/javascript" src="/js/common.js"></script>
+    <head>
+        <meta charset="UTF-8">
+        <title>서류결제</title>
+    </head>
+    <style>
+    table, td, th {
+  border : 1px solid black;
+  border-collapse : collapse;
+};
+    </style>
+    <body>
+        <h1>결제</h1>
+        <hr>
+        <span sec:authentication="name"></span> 님 반갑습니다.<br>
+        <a th:href="@{/member/approval}">뒤로 가기</a><br>
+       <!--  <div sec:authentication="principal.authorities"></div> -->
+		<select id="selectBox" multiple>
+		</select>
+						<div class="mb-3">
+				    <label class="form-label font-weight-bold"><span class="text-danger">* </span>Title.</label><br>
+				    <input type="text" class="form-control" name="title" required th:value="${ApprovalInForm.title}">
+				</div>
+				<div class="mb-3">
+				    <label class="form-label font-weight-bold"><span class="text-danger">* </span>분류.</label><br>
+				    <select id="kind" name="kind">
+				    <option value="정보" selected>정보</option>
+				    <option value="출장">출장</option>
+				    <option value="휴가">휴가</option>
+				    <option value="정산">정산</option>
+				    </select>
+				</div>
+				<div class="mb-3">
+			    	<label class="form-label font-weight-bold"><span class="text-danger">* </span>Content.</label><br>
+			    	<textarea id="contents" class="form-control" rows="5" name="contents" required></textarea>
+				</div>
+				<div class="mb-3">
+				   <!--  <label class="form-label font-weight-bold"><span class="text-danger">* </span>Writer.</label><br> -->
+				     
+				    <input id="position" hidden type="text" class="form-control" name="position" required th:value="${ApprovalInForm.position}">
+				    <input id="status" hidden type="text" class="form-control" name="status" required th:value="${ApprovalInForm.status}">
+				    <input id="count" hidden type="text" class="form-control" name="count" required th:value="${ApprovalInForm.count}">
+				    <input id="con" hidden type="text" class="form-control" name="con" required th:value="${ApprovalInForm.contents}">
+				</div>
+				
+      	<form id="formAction" th:action="@{/savestatus}" method="post">
+      	<input id="sn" hidden type="text" class="form-control" name="sn" required th:value="${ApprovalInForm.sn}">
+      	<input id="writer" hidden type="text" class="form-control" name="writer" required th:value="${#authentication.name}">
+		<input id="selectbtn" hidden type="text" class="form-control" name="selectbtn" required>
+				   		   <div class="mb-3">
+			    	<label class="form-label font-weight-bold"><span class="text-danger">* </span>추가의견.</label><br>
+			    	<textarea id="infotxt" class="form-control" rows="5" name="infotxt" required></textarea>
+				</div>
+<div class="mt-5">
+					<button id="btnOK" type="button" class="btn btn-primary" onclick="fnSubmit('1');">승인</button>
+					<button id="btnCancel" type="button" class="btn btn-primary" onclick="fnSubmit('2');">거절</button>
+				</div>
+		</form>
+    </body>
+    <script>
+    	init();
+    	
+    	function init(){
+    		//console.log($("#con").val())
+    		//console.log("${ApprovalInForm.contents}");
+    		$("#contents").val($("#con").val());
+    		$("#id").val("1").prop("selected", true); //값이 1인 option 선택
+    		AjaxSync("/api/applist",callback,null,$("#sn").val());
+    	}
+    	
+		function callback(result){
+			let check = true;
+			for(let i=0;i<result.length;i++){
+				let txt;
+		    		if(result[i].result == "0") txt="결제대기중";
+		    		else if(result[i].result == "1") txt="결제완료";
+		    		else txt="결제반려"; 
+
+		    	if($("#writer").val() ==result[i].approver && $("#position").val()==result[i].ordernum && $("#status").val()=="0"){
+		    		$("#btnOK").show();
+		    		$("#btnCancel").show();
+
+		    		$( "#infotxt" ).prop( "disabled", false );
+		    		check = false;
+		    	}else{
+		    		if(check == true){
+		    		$("#btnOK").hide();
+		    		$("#btnCancel").hide();
+		    		$( "#infotxt" ).prop( "disabled", true );
+		    		
+		    		}
+		    	}
+		    	let strTXT = "";
+		    	if(result[i].infotxt != null){
+		    		strTXT = "_"+result[i].infotxt;
+		    	}
+				$('#selectBox').append("<option value='"+i+"'>"+result[i].approver+"["+txt+"]"+strTXT+"</option>");
+			}
+		}
+
+
+		function fnSubmit(result){
+			$("#selectbtn").val(result);
+			$("#formAction").submit();
+			
+		}
+		function callbackEnd(result){
+			console.log("end");
+		}
+    </script>
+</html>

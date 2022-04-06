@@ -1,0 +1,4 @@
+--INSERT INTO tb_member(id,name,account,password ) VALUES(1,'백자현','BJH','1234');
+--INSERT INTO tb_member(id,name,account,password ) VALUES(2,'박준영','PJY','1234');
+--INSERT INTO tb_member(id,name,account,password ) VALUES(3,'심원재','SYJ','1234');
+--INSERT INTO tb_member(id,name,account,password ) VALUES(4,'함이준','HLJ','1234');
